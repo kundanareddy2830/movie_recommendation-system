@@ -3,23 +3,33 @@ import streamlit as st
 import requests
 import pandas as pd
 
-
 # Function to fetch movie poster from TMDB API
 def fetch_poster(movie_id):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US"
     data = requests.get(url).json()
     poster_path = data.get('poster_path')
     if poster_path:
-        full_path = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-        return full_path
+        return f"https://image.tmdb.org/t/p/w500/{poster_path}"
     return "https://via.placeholder.com/500x750?text=No+Image"
 
-
-# Function to recommend movies
+# Function to recommend movies using chunked similarity files
 def recommend(movie):
     try:
         index = movies[movies['title'] == movie].index[0]
-        distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
+        
+        # Determine which chunk to load
+        chunk_size = 480  # Assuming 4806 movies split into 10 chunks
+        chunk_index = index // chunk_size
+        
+        # Load the appropriate chunk of the similarity matrix
+        with open(f'similarity_part_{chunk_index}.pkl', 'rb') as f:
+            similarity_chunk = pickle.load(f)
+        
+        # Calculate the local index within the chunk
+        local_index = index % chunk_size
+        
+        # Calculate distances using the chunk
+        distances = sorted(list(enumerate(similarity_chunk[local_index])), reverse=True, key=lambda x: x[1])
 
         recommended_movie_names = []
         recommended_movie_posters = []
@@ -35,14 +45,12 @@ def recommend(movie):
         st.error(f"Error in recommendation: {e}")
         return [], []
 
-
 # Streamlit App Title
 st.header('🎬 Movie Recommender System')
 
-# Load the movie data and similarity matrix
+# Load the movie data
 try:
     movies = pickle.load(open('movies_dict.pkl', 'rb'))
-    similarity = pickle.load(open('similarity.pkl', 'rb'))
 
     # Ensure movies is a DataFrame
     if isinstance(movies, dict):

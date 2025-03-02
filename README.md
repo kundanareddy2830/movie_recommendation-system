@@ -1,5 +1,5 @@
 🎬 Movie Recommender System
-📌 About the App
+
 
 The Movie Recommender System is a web application that suggests movies based on a selected movie. The app uses machine learning techniques to recommend movies with similar characteristics, providing both movie titles and posters to enhance the user experience.
 
@@ -18,7 +18,7 @@ Error handling ensures a smooth user experience.
 
 🌐 Live Demo
 
-Click here to view the live app
+Click here to view the live app: https://movierecommendation-system28.streamlit.app/
 
 🚀 Features
 🎥 Select a movie from a dropdown list of popular movies.
